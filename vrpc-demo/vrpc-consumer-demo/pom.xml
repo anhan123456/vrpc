@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>vrpc-client-demo</artifactId>
+    <artifactId>vrpc-consumer-demo</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -19,6 +19,11 @@
         <dependency>
             <groupId>com.expectlost</groupId>
             <artifactId>vrpc-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.expectlost</groupId>
+            <artifactId>vrpc-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
