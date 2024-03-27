@@ -6,7 +6,7 @@ public class Application {
     public static void main(String[] args) {
         // 服务提供方，需要注册服务，启动服务
         // 1、封装要发布的服务
-         ServiceConfig<HelloVrpc> service = new ServiceConfig<>();
+        ServiceConfig<HelloVrpc> service = new ServiceConfig<>();
         service.setInterface(HelloVrpc.class);
         service.setRef(new HelloVrpcImpl());
         // 2、定义注册中心
