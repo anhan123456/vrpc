@@ -1,11 +1,8 @@
 package com.expectlost;
 
-import com.expectlost.utils.NetUtils;
-import com.expectlost.utils.zookeeper.ZookeeperNode;
-import com.expectlost.utils.zookeeper.ZookeeperUtils;
+import com.expectlost.discovery.Registry;
+import com.expectlost.discovery.RegistryConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
 
 import java.util.List;
 
@@ -24,8 +21,8 @@ public class VrpcBootstrap {
     //端口
     private int port =8088;
 
-    //维护一个zookeeper实例
-    private ZooKeeper zooKeeper;
+    //TODO 待处理
+    private Registry registry;
 
 
     private VrpcBootstrap() {
@@ -48,10 +45,8 @@ public class VrpcBootstrap {
      * @return this当前实例
      */
     public VrpcBootstrap registry(RegistryConfig registryConfig) {
-
-        //TODO 这里维护一个zookeeper实例 但是 如果这样写会让zookeeper与整个工程耦合
-        zooKeeper = ZookeeperUtils.createZookeeper();
-        this.registryConfig = registryConfig;
+        //使用 registryConfig获取一个注册中心
+        this.registry = registryConfig.getRegistry();
         return this;
     }
 
@@ -81,24 +76,9 @@ public class VrpcBootstrap {
      * @return
      */
     public VrpcBootstrap publish(ServiceConfig<?> service) {
-        //服务名称节点
-        String parentNode = Constant.BASE_PROVIDERS_PATH+"/"+service.getInterface().getName();
-        //节点类型
-        CreateMode createMode = CreateMode.PERSISTENT;
-        ZookeeperNode zookeeperNode = new ZookeeperNode(parentNode, null);
-        Boolean flag = ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, createMode);
+        //抽象注册中心概念 使用注册中心的一个实现完成注册
+        registry.register(service);
 
-        //创建本机临时节点 ip:port ,
-        //服务提供方的端口 一般自定义设定 我们还需要一个 获取ip的方法
-        //ip通常需要一个局域网ip 不是127.0.0.1 也不是ipv6
-        String node = parentNode+"/"+ NetUtils.getIp()+":"+port;
-        if(!ZookeeperUtils.exists(zooKeeper,node,null)){
-            ZookeeperNode zookeeperNode1 = new ZookeeperNode(node, null);
-            ZookeeperUtils.createNode(zooKeeper,zookeeperNode1,null,CreateMode.EPHEMERAL);
-        }
-        if(log.isDebugEnabled()) {
-            log.debug("服务{}已经注册",service.getInterface().getName());
-        }
         return this;
     }
 
@@ -108,8 +88,9 @@ public class VrpcBootstrap {
      * @return
      */
     public VrpcBootstrap publish(List<ServiceConfig> services) {
-
-
+        for (ServiceConfig service : services) {
+            this.publish(service);
+        }
         return this;
     }
 

@@ -1,5 +1,6 @@
 package com.expectlost;
 
+import com.expectlost.discovery.RegistryConfig;
 import com.expectlost.impl.HelloVrpcImpl;
 
 public class Application {

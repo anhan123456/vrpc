@@ -1,5 +1,7 @@
 package com.expectlost;
 
+import com.expectlost.discovery.RegistryConfig;
+
 public class Application {
     public static void main(String[] args) {
         //获取代理对象 使用ReferenceConfig进行封装
