@@ -10,4 +10,8 @@ public class DiscoveryException extends RuntimeException {
     public DiscoveryException(String message) {
         super(message);
     }
+
+    public DiscoveryException(Throwable cause) {
+        super(cause);
+    }
 }

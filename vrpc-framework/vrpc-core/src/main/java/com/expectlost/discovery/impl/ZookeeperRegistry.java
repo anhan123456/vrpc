@@ -3,12 +3,19 @@ package com.expectlost.discovery.impl;
 import com.expectlost.Constant;
 import com.expectlost.ServiceConfig;
 import com.expectlost.discovery.AbstractRegistry;
+import com.expectlost.exceptions.DiscoveryException;
+import com.expectlost.exceptions.NetworkException;
 import com.expectlost.utils.NetUtils;
 import com.expectlost.utils.zookeeper.ZookeeperNode;
 import com.expectlost.utils.zookeeper.ZookeeperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ZookeeperRegistry extends AbstractRegistry {
@@ -44,7 +51,29 @@ public class ZookeeperRegistry extends AbstractRegistry {
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode1,null,CreateMode.EPHEMERAL);
         }
         if(log.isDebugEnabled()) {
-            log.debug("服务{}已经注册",service.getInterface().getName());
+            log.debug("服务【{}】已经注册",service.getInterface().getName());
         }
+    }
+
+    @Override
+    public InetSocketAddress lookup(String serviceName) {
+        //1.找到服务对应节点
+        String serviceNode = Constant.BASE_PROVIDERS_PATH+"/"+serviceName;
+        //2.从zk中获取他的子节点 192.168.xx.xx:1234
+        List<String> children = ZookeeperUtils.getChildren(zooKeeper,serviceNode,null);
+        List<InetSocketAddress> socketAddresses = children.stream().map(ipstr -> {
+            String[] ip_port = ipstr.split(":");
+            String ip = ip_port[0];
+            int port = Integer.valueOf(ip_port[1]);
+            InetSocketAddress inetSocketAddress = new InetSocketAddress(ip, port);
+            return inetSocketAddress;
+        }).collect(Collectors.toList());
+
+        if(socketAddresses.size()==0)
+        {
+            throw  new DiscoveryException("未发现可用节点");
+        }
+
+        return socketAddresses.get(0);
     }
 }

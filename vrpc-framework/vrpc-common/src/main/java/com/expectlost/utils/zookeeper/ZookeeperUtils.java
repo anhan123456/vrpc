@@ -5,6 +5,7 @@ import com.expectlost.exceptions.ZookeeperException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -27,7 +28,7 @@ public class ZookeeperUtils {
         try {
             final ZooKeeper zookeeper = new ZooKeeper(connectString, timeout, (event) -> {
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
-                    System.out.println("客户端连接成功");
+                    log.info("客户端连接成功");
                     countDownLatch.countDown();
                 }
             });
@@ -104,5 +105,22 @@ public class ZookeeperUtils {
             e.printStackTrace();
             throw new ZookeeperException();
         }
+    }
+
+    /**
+     * 通过传入一个服务名 获取可用节点
+     * @param zooKeeper zk实例
+     * @param serviceNode 服务节点
+     * @return 子元素列表
+     */
+    public static List<String> getChildren(ZooKeeper zooKeeper, String serviceNode,Watcher watcher) {
+        try {
+            return  zooKeeper.getChildren(serviceNode, watcher);
+        } catch (KeeperException | InterruptedException e) {
+            e.printStackTrace();
+            log.error("获取节点【{}】的子元素时发生异常",serviceNode,e);
+            throw  new ZookeeperException();
+        }
+
     }
 }
