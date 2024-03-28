@@ -15,7 +15,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 
 @Slf4j
-public class VrpcMessageDecoder extends LengthFieldBasedFrameDecoder {
+public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
     @Override
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
         Object decode = super.decode(ctx, in);
@@ -84,13 +84,17 @@ public class VrpcMessageDecoder extends LengthFieldBasedFrameDecoder {
             e.printStackTrace();
             log.error("请求【{}】反序列化时发生了异常", requestId, e);
         }
+        if (log.isDebugEnabled())
+        {
+            log.debug("请求【{}】 已经在服务端完成解码工作",request.getRequestId());
+        }
 
         return request;
 
 
     }
 
-    public VrpcMessageDecoder() {
+    public VrpcRequestDecoder() {
         super(
                 //最大帧长度
                 MessageFormatConstant.MAX_FRAME_LENGTH,

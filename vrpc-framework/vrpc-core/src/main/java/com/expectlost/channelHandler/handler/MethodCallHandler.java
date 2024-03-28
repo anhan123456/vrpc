@@ -2,8 +2,10 @@ package com.expectlost.channelHandler.handler;
 
 import com.expectlost.ServiceConfig;
 import com.expectlost.VrpcBootstrap;
+import com.expectlost.enumeration.RespCode;
 import com.expectlost.transport.message.RequestPayload;
 import com.expectlost.transport.message.VrpcRequest;
+import com.expectlost.transport.message.VrpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -19,13 +21,22 @@ public class MethodCallHandler extends SimpleChannelInboundHandler<VrpcRequest> 
 
         //根据载荷内容进行方法调用
 
-        Object object = callTargetMethod(requestPayload);
-        System.out.println(object);
+        Object result = callTargetMethod(requestPayload);
         //封装响应
 
+        if(log.isDebugEnabled())
+        {
+            log.debug("请求【{}】已经在服务端完成方法调用",vrpcRequest.getRequestId());
+        }
         //写出响应
+        VrpcResponse response = new VrpcResponse();
+        response.setCode(RespCode.SUCCESS.getCode());
+        response.setCompressType(vrpcRequest.getCompressType());
+        response.setRequestId(vrpcRequest.getRequestId());
+        response.setSerializeType(vrpcRequest.getSerializeType());
+        response.setBody(result);
 
-        channelHandlerContext.channel().writeAndFlush(null);
+        channelHandlerContext.channel().writeAndFlush(response);
     }
 
     private Object callTargetMethod(RequestPayload requestPayload) {

@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
  * 出站时第一个经过的处理器 进行数据编码
  */
 @Slf4j
-public class VrpcMessageEncoder extends MessageToByteEncoder<VrpcRequest> {
+public class VrpcRequestEncoder extends MessageToByteEncoder<VrpcRequest> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, VrpcRequest vrpcRequest, ByteBuf byteBuf) throws Exception {
 
@@ -72,12 +72,15 @@ public class VrpcMessageEncoder extends MessageToByteEncoder<VrpcRequest> {
                 + MessageFormatConstant.VERSION_LENGTH + MessageFormatConstant.HEADER_FIELD_LENGTH);
         byteBuf.writeInt(MessageFormatConstant.HEADER_LENGTH +bodyLength);
         byteBuf.writerIndex(wirterIndex);
-
+        if (log.isDebugEnabled())
+        {
+            log.debug("请求【{}】 已经完成报文编码",vrpcRequest.getRequestId());
+        }
     }
 
     private byte[] getBodyBytes(RequestPayload requestPayload) {
 
-        if(requestPayload ==null)
+        if(requestPayload==null)
         {
             return null;
         }
@@ -87,14 +90,11 @@ public class VrpcMessageEncoder extends MessageToByteEncoder<VrpcRequest> {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
             objectOutputStream.writeObject(requestPayload);
             //压缩
-
             return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             log.error("序列化时出现了异常");
             throw new RuntimeException(e);
         }
-
-
     }
 
 
