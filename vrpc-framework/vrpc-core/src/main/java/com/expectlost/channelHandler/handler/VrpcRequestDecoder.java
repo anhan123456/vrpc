@@ -1,6 +1,10 @@
 package com.expectlost.channelHandler.handler;
 
+import com.expectlost.compress.Compressor;
+import com.expectlost.compress.CompressorFactory;
 import com.expectlost.enumeration.RequestType;
+import com.expectlost.serialize.Serializer;
+import com.expectlost.serialize.SerializerFactory;
 import com.expectlost.transport.message.MessageFormatConstant;
 import com.expectlost.transport.message.RequestPayload;
 import com.expectlost.transport.message.VrpcRequest;
@@ -68,27 +72,19 @@ public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
             return request;
         }
         int payloadLength = fullLength - headLength;
-        byte[] paload = new byte[payloadLength];
-        ByteBuf payload = byteBuf.readBytes(paload);
+        byte[] payload = new byte[payloadLength];
+        byteBuf.readBytes(payload);
 
         //todo 解压缩
+        Compressor compressor = CompressorFactory.getCompressor(request.getCompressType()).getCompressor();
+        payload = compressor.decompress(payload);
 
         //todo 反序列化
 
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(paload);
-             ObjectInputStream ois = new ObjectInputStream(bais);) {
-            RequestPayload requestPayload = (RequestPayload) ois.readObject();
-            request.setRequestPayload(requestPayload);
-
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            log.error("请求【{}】反序列化时发生了异常", requestId, e);
-        }
-        if (log.isDebugEnabled())
-        {
-            log.debug("请求【{}】 已经在服务端完成解码工作",request.getRequestId());
-        }
-
+        Serializer serializer = SerializerFactory.getSerializer(request.getSerializeType()).getSerializer();
+        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+        request.setRequestPayload(requestPayload);
+        log.debug("请求【{}】 已经在服务端完成反序列化工作",request.getRequestId());
         return request;
 
 

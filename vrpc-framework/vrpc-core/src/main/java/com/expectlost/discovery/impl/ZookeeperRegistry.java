@@ -2,6 +2,7 @@ package com.expectlost.discovery.impl;
 
 import com.expectlost.Constant;
 import com.expectlost.ServiceConfig;
+import com.expectlost.VrpcBootstrap;
 import com.expectlost.discovery.AbstractRegistry;
 import com.expectlost.exceptions.DiscoveryException;
 import com.expectlost.exceptions.NetworkException;
@@ -45,7 +46,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //服务提供方的端口 一般自定义设定 我们还需要一个 获取ip的方法
         //ip通常需要一个局域网ip 不是127.0.0.1 也不是ipv6
         //TODO 端口后续处理端口问题
-        String node = parentNode+"/"+ NetUtils.getIp()+":"+8088;
+        String node = parentNode+"/"+ NetUtils.getIp()+":"+ VrpcBootstrap.getInstance().PORT;
         if(!ZookeeperUtils.exists(zooKeeper,node,null)){
             ZookeeperNode zookeeperNode1 = new ZookeeperNode(node, null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode1,null,CreateMode.EPHEMERAL);
@@ -55,8 +56,13 @@ public class ZookeeperRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     *
+     * @param serviceName 服务名
+     * @return 服务列表
+     */
     @Override
-    public InetSocketAddress lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName) {
         //1.找到服务对应节点
         String serviceNode = Constant.BASE_PROVIDERS_PATH+"/"+serviceName;
         //2.从zk中获取他的子节点 192.168.xx.xx:1234
@@ -74,6 +80,6 @@ public class ZookeeperRegistry extends AbstractRegistry {
             throw  new DiscoveryException("未发现可用节点");
         }
 
-        return socketAddresses.get(0);
+        return socketAddresses;
     }
 }

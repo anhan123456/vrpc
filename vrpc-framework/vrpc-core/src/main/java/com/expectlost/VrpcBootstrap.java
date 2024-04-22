@@ -5,6 +5,8 @@ import com.expectlost.channelHandler.handler.VrpcRequestDecoder;
 import com.expectlost.channelHandler.handler.VrpcResponseEncoder;
 import com.expectlost.discovery.Registry;
 import com.expectlost.discovery.RegistryConfig;
+import com.expectlost.loadbalancer.LoadBalancer;
+import com.expectlost.loadbalancer.impl.RoundRobinLoadBalancer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -22,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class VrpcBootstrap {
 
+    public static final int  PORT = 8091;
     //VrpcBootstrap是个单例
     private static final VrpcBootstrap vrpcBootstrap = new VrpcBootstrap();
 
@@ -32,9 +35,12 @@ public class VrpcBootstrap {
     //定义服务协议
     private ProtocalConfig protocalConfig;
     //端口
-    private int port = 8088;
+    public static final IdGenerator ID_GENERATOR = new IdGenerator(1,2);
+    public static String SERIALIZE_TYPE = "jdk";
+    public static String COMPRESS_TYPE = "gzip";
 
     private Registry registry;
+    public  static LoadBalancer LOAD_BALANCER = new RoundRobinLoadBalancer();
     //连接缓存
     public final static Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>();
 
@@ -70,6 +76,8 @@ public class VrpcBootstrap {
     public VrpcBootstrap registry(RegistryConfig registryConfig) {
         //使用 registryConfig获取一个注册中心
         this.registry = registryConfig.getRegistry();
+
+        VrpcBootstrap.LOAD_BALANCER = new RoundRobinLoadBalancer();
         return this;
     }
 
@@ -147,7 +155,7 @@ public class VrpcBootstrap {
                     });
 
             //TODO 绑定端口
-            ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(PORT).sync();
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
 
@@ -173,6 +181,26 @@ public class VrpcBootstrap {
         return this;
     }
 
+    public VrpcBootstrap serialize(String serializeType) {
+        if(log.isDebugEnabled())
+        {
+            log.debug("配置序列化方式为【{}】",serializeType);
+        }
+        SERIALIZE_TYPE = serializeType;
+        return this;
+    }
+    public VrpcBootstrap compress(String compressType) {
+        if(log.isDebugEnabled())
+        {
+            log.debug("配置压缩方式为【{}】",compressType);
+        }
+        COMPRESS_TYPE = compressType;
+        return this;
+    }
+
+    public Registry getRegistry() {
+        return registry;
+    }
 
     /**
      * TODO-------------服务调用方api-----------------

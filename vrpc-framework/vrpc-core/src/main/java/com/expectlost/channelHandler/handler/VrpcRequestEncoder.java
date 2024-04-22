@@ -1,6 +1,13 @@
 package com.expectlost.channelHandler.handler;
 
+import com.expectlost.VrpcBootstrap;
+import com.expectlost.compress.Compressor;
+import com.expectlost.compress.CompressorFactory;
 import com.expectlost.enumeration.RequestType;
+import com.expectlost.serialize.SerializeUtil;
+import com.expectlost.serialize.Serializer;
+import com.expectlost.serialize.SerializerFactory;
+import com.expectlost.serialize.impl.JdkSerializer;
 import com.expectlost.transport.message.MessageFormatConstant;
 import com.expectlost.transport.message.RequestPayload;
 import com.expectlost.transport.message.VrpcRequest;
@@ -57,8 +64,13 @@ public class VrpcRequestEncoder extends MessageToByteEncoder<VrpcRequest> {
 //            return;
 //        }
 
+        Serializer serializer = SerializerFactory.getSerializer(vrpcRequest.getSerializeType()).getSerializer();
         //写入请求体 requestPayload
-        byte[] body = getBodyBytes(vrpcRequest.getRequestPayload());
+        byte[] body = serializer.serialize(vrpcRequest.getRequestPayload());
+
+        //压缩
+        Compressor compressor = CompressorFactory.getCompressor(vrpcRequest.getCompressType()).getCompressor();
+        body = compressor.compress(body);
         if(body!=null)
         {
             byteBuf.writeBytes(body);
@@ -78,24 +90,7 @@ public class VrpcRequestEncoder extends MessageToByteEncoder<VrpcRequest> {
         }
     }
 
-    private byte[] getBodyBytes(RequestPayload requestPayload) {
 
-        if(requestPayload==null)
-        {
-            return null;
-        }
-        //todo 针对不同消息类型做不同处理 心跳请求没有payload
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(requestPayload);
-            //压缩
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            log.error("序列化时出现了异常");
-            throw new RuntimeException(e);
-        }
-    }
 
 
 }

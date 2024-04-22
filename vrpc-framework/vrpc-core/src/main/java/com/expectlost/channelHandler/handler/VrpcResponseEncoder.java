@@ -1,6 +1,10 @@
 package com.expectlost.channelHandler.handler;
 
+import com.expectlost.compress.Compressor;
+import com.expectlost.compress.CompressorFactory;
 import com.expectlost.enumeration.RequestType;
+import com.expectlost.serialize.Serializer;
+import com.expectlost.serialize.SerializerFactory;
 import com.expectlost.transport.message.MessageFormatConstant;
 import com.expectlost.transport.message.RequestPayload;
 import com.expectlost.transport.message.VrpcRequest;
@@ -48,8 +52,16 @@ public class VrpcResponseEncoder extends MessageToByteEncoder<VrpcResponse> {
         //8字节请求id
         byteBuf.writeLong(vrpcResponse.getRequestId());
 
+        Serializer serializer  = SerializerFactory.getSerializer(vrpcResponse.getSerializeType()).getSerializer();
         //写入请求体 requestPayload
-        byte[] body = getBodyBytes(vrpcResponse.getBody());
+        byte[] body = serializer.serialize(vrpcResponse.getBody());
+
+        //TODO 压缩
+
+        Compressor compressor = CompressorFactory.getCompressor(vrpcResponse.getCompressType()).getCompressor();
+        body = compressor.compress(body);
+
+
         if(body!=null)
         {
             byteBuf.writeBytes(body);
@@ -67,29 +79,8 @@ public class VrpcResponseEncoder extends MessageToByteEncoder<VrpcResponse> {
         {
             log.debug("响应【{}】已经在服务端完成编码工作",vrpcResponse.getRequestId());
         }
-
-
-
     }
 
-    private byte[] getBodyBytes(Object body) {
-
-        if(body==null)
-        {
-            return null;
-        }
-        //todo 针对不同消息类型做不同处理 心跳请求没有payload
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(body);
-            //压缩
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            log.error("序列化时出现了异常");
-            throw new RuntimeException(e);
-        }
-    }
 
 
 }

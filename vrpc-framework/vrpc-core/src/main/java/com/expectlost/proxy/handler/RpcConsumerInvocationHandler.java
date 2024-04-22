@@ -1,11 +1,14 @@
 package com.expectlost.proxy.handler;
 
+import com.expectlost.IdGenerator;
 import com.expectlost.NettyBootstrapInitializer;
 import com.expectlost.VrpcBootstrap;
+import com.expectlost.compress.CompressorFactory;
 import com.expectlost.discovery.Registry;
 import com.expectlost.enumeration.RequestType;
 import com.expectlost.exceptions.DiscoveryException;
 import com.expectlost.exceptions.NetworkException;
+import com.expectlost.serialize.SerializerFactory;
 import com.expectlost.transport.message.RequestPayload;
 import com.expectlost.transport.message.VrpcRequest;
 import io.netty.buffer.Unpooled;
@@ -17,6 +20,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -37,12 +41,13 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        // 调用sayhi事实上会走进这个函数
 
         //TODO 每次调用相关方法时候 都要去注册中心拉取服务节点
         //如何合理选择一个可用服务
         //传入服务名 返回ip:port
-        InetSocketAddress address = registry.lookup(interfaceRef.getName());
+//        List<InetSocketAddress> address = registry.lookup(interfaceRef.getName());
+
+        InetSocketAddress address = VrpcBootstrap.LOAD_BALANCER.selectServiceAddress(interfaceRef.getName());
         if (log.isDebugEnabled()) {
             log.debug("服务调用方，发现了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
         }
@@ -67,10 +72,10 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .build();
         //todo 需要对各种请求id和类型做处理
         VrpcRequest request = VrpcRequest.builder()
-                .requestId(1L)
-                .compressType((byte) 1)
+                .requestId(VrpcBootstrap.ID_GENERATOR.getId())
+                .compressType(CompressorFactory.getCompressor(VrpcBootstrap.COMPRESS_TYPE).getCode())
                 .requestType(RequestType.REQUEST.getId())
-                .serializeType((byte) 1)
+                .serializeType(SerializerFactory.getSerializer(VrpcBootstrap.SERIALIZE_TYPE).getCode())
                 .requestPayload(payload)
                 .build();
 

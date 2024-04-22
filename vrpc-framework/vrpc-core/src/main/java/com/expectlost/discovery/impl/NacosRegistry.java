@@ -4,6 +4,7 @@ import com.expectlost.ServiceConfig;
 import com.expectlost.discovery.AbstractRegistry;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public class NacosRegistry extends AbstractRegistry {
     @Override
@@ -12,7 +13,7 @@ public class NacosRegistry extends AbstractRegistry {
     }
 
     @Override
-    public InetSocketAddress lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName) {
         return null;
     }
 }

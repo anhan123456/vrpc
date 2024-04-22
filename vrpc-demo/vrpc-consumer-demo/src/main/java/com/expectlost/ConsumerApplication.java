@@ -1,6 +1,7 @@
 package com.expectlost;
 
 import com.expectlost.discovery.RegistryConfig;
+import com.expectlost.serialize.impl.JdkSerializer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -11,15 +12,19 @@ public class ConsumerApplication {
         ReferenceConfig<HelloVrpc> reference = new ReferenceConfig<>();
         reference.setInterface(HelloVrpc.class);
 
-
-
         VrpcBootstrap.getInstance()
-                .application("first-vrpc-consumer")
+                .application("first-" +
+                        "rpc-consumer")
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .serialize("jdk")
+                .compress("gzip")
                 .reference(reference);
 
         HelloVrpc helloVrpc = reference.get();
-        String sayHi = helloVrpc.sayHi("你好");
-        log.info("sayHi-->{}",sayHi);
+        for (int i = 0; i < 10; i++) {
+            String sayHi = helloVrpc.sayHi("1111111");
+            log.info("sayHi-->{}",sayHi);
+        }
+
     }
 }

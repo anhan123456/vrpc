@@ -9,4 +9,8 @@ public interface HelloVrpc {
      * @return
      */
     String sayHi(String msg);
+
+
+    Integer sum(Integer a,Integer b);
+
 }
