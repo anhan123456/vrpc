@@ -23,6 +23,7 @@ public class ConsumerApplication {
         HelloVrpc helloVrpc = reference.get();
         for (int i = 0; i < 10; i++) {
             String sayHi = helloVrpc.sayHi("1111111");
+            String sayHi2 = helloVrpc.sayHi("2222222");
             log.info("sayHi-->{}",sayHi);
         }
 

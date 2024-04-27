@@ -6,7 +6,11 @@ import com.expectlost.channelHandler.handler.VrpcResponseEncoder;
 import com.expectlost.discovery.Registry;
 import com.expectlost.discovery.RegistryConfig;
 import com.expectlost.loadbalancer.LoadBalancer;
+import com.expectlost.loadbalancer.impl.ConsistentHashBalancer;
+import com.expectlost.loadbalancer.impl.LRUBalancer;
+import com.expectlost.loadbalancer.impl.RandomBalancer;
 import com.expectlost.loadbalancer.impl.RoundRobinLoadBalancer;
+import com.expectlost.transport.message.VrpcRequest;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -18,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +43,8 @@ public class VrpcBootstrap {
     public static final IdGenerator ID_GENERATOR = new IdGenerator(1,2);
     public static String SERIALIZE_TYPE = "jdk";
     public static String COMPRESS_TYPE = "gzip";
+
+    public static final  ThreadLocal<VrpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
 
     private Registry registry;
     public  static LoadBalancer LOAD_BALANCER = new RoundRobinLoadBalancer();
@@ -77,7 +84,7 @@ public class VrpcBootstrap {
         //使用 registryConfig获取一个注册中心
         this.registry = registryConfig.getRegistry();
 
-        VrpcBootstrap.LOAD_BALANCER = new RoundRobinLoadBalancer();
+        VrpcBootstrap.LOAD_BALANCER = new LRUBalancer();
         return this;
     }
 

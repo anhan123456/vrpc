@@ -42,24 +42,6 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-        //TODO 每次调用相关方法时候 都要去注册中心拉取服务节点
-        //如何合理选择一个可用服务
-        //传入服务名 返回ip:port
-//        List<InetSocketAddress> address = registry.lookup(interfaceRef.getName());
-
-        InetSocketAddress address = VrpcBootstrap.LOAD_BALANCER.selectServiceAddress(interfaceRef.getName());
-        if (log.isDebugEnabled()) {
-            log.debug("服务调用方，发现了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
-        }
-        /**
-         * 尝试获取通道
-         */
-        Channel channel = getAvailableChannel(address);
-        if(log.isDebugEnabled())
-        {
-            log.debug("获取了和【{}】建立的链接通道 准备发送数据",address);
-        }
-
         /**
          * -------------------封装报文---------------
          */
@@ -78,6 +60,23 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .serializeType(SerializerFactory.getSerializer(VrpcBootstrap.SERIALIZE_TYPE).getCode())
                 .requestPayload(payload)
                 .build();
+
+
+        //将请求内容存入本地线程中
+        VrpcBootstrap.REQUEST_THREAD_LOCAL.set(request);
+        InetSocketAddress address = VrpcBootstrap.LOAD_BALANCER.selectServiceAddress(interfaceRef.getName());
+        if (log.isDebugEnabled()) {
+            log.debug("服务调用方，发现了服务【{}】的可用主机【{}】", interfaceRef.getName(), address);
+        }
+        /**
+         * 尝试获取通道
+         */
+        Channel channel = getAvailableChannel(address);
+        if(log.isDebugEnabled())
+        {
+            log.debug("获取了和【{}】建立的链接通道 准备发送数据",address);
+        }
+
 
 
         /**
@@ -108,6 +107,8 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 completableFuture.completeExceptionally(cause);
             }
         });
+
+        VrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
         return completableFuture.get(3, TimeUnit.SECONDS);
 
     }
