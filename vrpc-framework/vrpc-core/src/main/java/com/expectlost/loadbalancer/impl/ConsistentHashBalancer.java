@@ -100,19 +100,14 @@ public class ConsistentHashBalancer extends AbstractLoadBalancer implements Load
          */
         private int hash(String s) {
             try {
-                // Get an instance of MD5 hash function
                 MessageDigest md = MessageDigest.getInstance("MD5");
-                // Compute the hash value of the input string
                 byte[] bytes = md.digest(s.getBytes());
-                // Convert the hash value to an integer
                 int hash = ((int) bytes[0] & 0xFF) |
                         (((int) bytes[1] & 0xFF) << 8) |
                         (((int) bytes[2] & 0xFF) << 16) |
                         (((int) bytes[3] & 0xFF) << 24);
                 return hash;
             } catch (NoSuchAlgorithmException e) {
-                // Handle the case where MD5 algorithm is not available
-                // You can log an error message or throw an exception based on your requirement
                 e.printStackTrace();
                 return 0;
             }
@@ -129,9 +124,5 @@ public class ConsistentHashBalancer extends AbstractLoadBalancer implements Load
             return stringBuilder.toString();
         }
 
-        @Override
-        public void rebalance() {
-
-        }
     }
 }

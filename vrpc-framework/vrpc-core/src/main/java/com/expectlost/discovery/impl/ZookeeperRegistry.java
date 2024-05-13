@@ -9,8 +9,11 @@ import com.expectlost.exceptions.NetworkException;
 import com.expectlost.utils.NetUtils;
 import com.expectlost.utils.zookeeper.ZookeeperNode;
 import com.expectlost.utils.zookeeper.ZookeeperUtils;
+import com.expectlost.watch.UpAndDownWatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.net.InetAddress;
@@ -40,7 +43,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //节点类型
         CreateMode createMode = CreateMode.PERSISTENT;
         ZookeeperNode zookeeperNode = new ZookeeperNode(parentNode, null);
-        Boolean flag = ZookeeperUtils.createNode(zooKeeper, zookeeperNode, null, createMode);
+        Boolean flag = ZookeeperUtils.createNode(zooKeeper, zookeeperNode,null, createMode);
 
         //创建本机临时节点 ip:port ,
         //服务提供方的端口 一般自定义设定 我们还需要一个 获取ip的方法
@@ -66,7 +69,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //1.找到服务对应节点
         String serviceNode = Constant.BASE_PROVIDERS_PATH+"/"+serviceName;
         //2.从zk中获取他的子节点 192.168.xx.xx:1234
-        List<String> children = ZookeeperUtils.getChildren(zooKeeper,serviceNode,null);
+        List<String> children = ZookeeperUtils.getChildren(zooKeeper,serviceNode, new UpAndDownWatcher());
         List<InetSocketAddress> socketAddresses = children.stream().map(ipstr -> {
             String[] ip_port = ipstr.split(":");
             String ip = ip_port[0];

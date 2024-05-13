@@ -2,6 +2,7 @@ package com.expectlost.channelHandler.handler;
 
 import com.expectlost.ServiceConfig;
 import com.expectlost.VrpcBootstrap;
+import com.expectlost.enumeration.RequestType;
 import com.expectlost.enumeration.RespCode;
 import com.expectlost.transport.message.RequestPayload;
 import com.expectlost.transport.message.VrpcRequest;
@@ -19,15 +20,18 @@ public class MethodCallHandler extends SimpleChannelInboundHandler<VrpcRequest> 
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, VrpcRequest vrpcRequest) throws Exception {
         RequestPayload requestPayload = vrpcRequest.getRequestPayload();
 
+        Object result = null;
         //根据载荷内容进行方法调用
-
-        Object result = callTargetMethod(requestPayload);
-        //封装响应
-
-        if(log.isDebugEnabled())
-        {
-            log.debug("请求【{}】已经在服务端完成方法调用",vrpcRequest.getRequestId());
+        //如果不是心跳才调用
+        if(vrpcRequest.getRequestType()!= RequestType.HEARTBEAT.getId()){
+            //封装响应
+           result = callTargetMethod(requestPayload);
+            if(log.isDebugEnabled())
+            {
+                log.debug("请求【{}】已经在服务端完成方法调用",vrpcRequest.getRequestId());
+            }
         }
+
         //写出响应
         VrpcResponse response = new VrpcResponse();
         response.setCode(RespCode.SUCCESS.getCode());

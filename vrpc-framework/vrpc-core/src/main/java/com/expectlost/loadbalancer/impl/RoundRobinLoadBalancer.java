@@ -47,9 +47,5 @@ public class RoundRobinLoadBalancer extends AbstractLoadBalancer implements Load
             return address;
         }
 
-        @Override
-        public void rebalance() {
-
-        }
     }
 }

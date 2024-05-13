@@ -10,4 +10,6 @@ public interface LoadBalancer {
      * @return
      */
    InetSocketAddress selectServiceAddress(String serviceName);
+
+   void reLoadBalance(String serviceName, List<InetSocketAddress> addresses);
 }

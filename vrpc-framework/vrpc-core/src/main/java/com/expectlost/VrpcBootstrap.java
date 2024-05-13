@@ -3,14 +3,13 @@ package com.expectlost;
 import com.expectlost.channelHandler.handler.MethodCallHandler;
 import com.expectlost.channelHandler.handler.VrpcRequestDecoder;
 import com.expectlost.channelHandler.handler.VrpcResponseEncoder;
+import com.expectlost.core.HeartBeatDetector;
 import com.expectlost.discovery.Registry;
 import com.expectlost.discovery.RegistryConfig;
 import com.expectlost.loadbalancer.LoadBalancer;
-import com.expectlost.loadbalancer.impl.ConsistentHashBalancer;
-import com.expectlost.loadbalancer.impl.LRUBalancer;
-import com.expectlost.loadbalancer.impl.RandomBalancer;
-import com.expectlost.loadbalancer.impl.RoundRobinLoadBalancer;
+import com.expectlost.loadbalancer.impl.*;
 import com.expectlost.transport.message.VrpcRequest;
+import com.sun.source.tree.Tree;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -23,13 +22,14 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class VrpcBootstrap {
 
-    public static final int  PORT = 8091;
+    public static final int  PORT = 9091;
     //VrpcBootstrap是个单例
     private static final VrpcBootstrap vrpcBootstrap = new VrpcBootstrap();
 
@@ -50,6 +50,7 @@ public class VrpcBootstrap {
     public  static LoadBalancer LOAD_BALANCER = new RoundRobinLoadBalancer();
     //连接缓存
     public final static Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>();
+    public final static TreeMap<Long, InetSocketAddress> ANSWER_TIME_CHANNEL_CACHE = new TreeMap<>();
 
     //维护已经发布并且暴露的服务列表 key >interface全限定名称 value -> serviceConfig
     public static final Map<String, ServiceConfig<?>> SERVICE_LIST = new ConcurrentHashMap<>(16);
@@ -84,7 +85,7 @@ public class VrpcBootstrap {
         //使用 registryConfig获取一个注册中心
         this.registry = registryConfig.getRegistry();
 
-        VrpcBootstrap.LOAD_BALANCER = new LRUBalancer();
+        VrpcBootstrap.LOAD_BALANCER = new RoundRobinLoadBalancer();
         return this;
     }
 
@@ -181,6 +182,8 @@ public class VrpcBootstrap {
 
     public VrpcBootstrap reference(ReferenceConfig<?> reference) {
 
+        //开启存活探知
+        HeartBeatDetector.detect(reference.getInterface().getName());
 
         //在此方法中我们是否可以拿到相关配置项 注册中心
         //配置 reference 将来调用get方法时方便生成 代理对象

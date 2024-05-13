@@ -59,14 +59,14 @@ public class VrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         //请求id
         long requestId = byteBuf.readLong();
         //时间戳
-//        long timeStamp = byteBuf.readLong();
+        long timeStamp = byteBuf.readLong();
 
         VrpcResponse response = new VrpcResponse();
         response.setCode(responseCode);
         response.setCompressType(compressType);
         response.setSerializeType(serializeType);
         response.setRequestId(requestId);
-
+        response.setTimeStamp(timeStamp);
         //心跳请求没有载荷 此处可以直接返回
 //        if (requestType == RequestType.HEARTBEAT.getId()) {
 //            return request;
@@ -77,6 +77,8 @@ public class VrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
 
         //todo 解压缩
 
+        if(result!=null&&result.length>0){
+
         Compressor compressor = CompressorFactory.getCompressor(response.getCompressType()).getCompressor();
         result = compressor.decompress(result);
 
@@ -85,10 +87,12 @@ public class VrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
         Serializer serializer = SerializerFactory.getSerializer(response.getSerializeType()).getSerializer();
         Object result_body = serializer.deserialize(result, Object.class);
         response.setBody(result_body);
-        if(log.isDebugEnabled())
-        {
-            log.debug("响应【{}】已经在调用端完成反序列化工作",response.getRequestId());
+            if(log.isDebugEnabled())
+            {
+                log.debug("响应【{}】已经在调用端完成反序列化工作",response.getRequestId());
+            }
         }
+
         return response;
 
 

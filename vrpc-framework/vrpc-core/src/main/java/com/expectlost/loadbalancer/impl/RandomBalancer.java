@@ -33,9 +33,6 @@ public class RandomBalancer extends AbstractLoadBalancer implements LoadBalancer
             return this.serviceList.get(i);
         }
 
-        @Override
-        public void rebalance() {
 
-        }
     }
 }

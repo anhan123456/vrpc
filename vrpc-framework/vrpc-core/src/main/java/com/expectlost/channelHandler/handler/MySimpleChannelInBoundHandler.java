@@ -15,9 +15,11 @@ public class MySimpleChannelInBoundHandler extends SimpleChannelInboundHandler<V
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, VrpcResponse response) throws Exception {
+
         //服务提供方返回的结果
         Object result = response.getBody();
-        CompletableFuture<Object> completableFuture = VrpcBootstrap.PENDING_REQUEST.get(1L);
+        result = result == null ? new Object() : result;
+        CompletableFuture<Object> completableFuture = VrpcBootstrap.PENDING_REQUEST.get(response.getRequestId());
         completableFuture.complete(result);
     }
 }

@@ -19,6 +19,7 @@ public class VrpcResponse {
     private byte compressType;
     private byte serializeType;
 
+    private long timeStamp;
     private byte code;
 
     //消息体

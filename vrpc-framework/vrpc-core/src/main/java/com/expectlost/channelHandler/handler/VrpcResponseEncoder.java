@@ -51,16 +51,22 @@ public class VrpcResponseEncoder extends MessageToByteEncoder<VrpcResponse> {
 
         //8字节请求id
         byteBuf.writeLong(vrpcResponse.getRequestId());
+        byteBuf.writeLong(vrpcResponse.getTimeStamp());
 
-        Serializer serializer  = SerializerFactory.getSerializer(vrpcResponse.getSerializeType()).getSerializer();
-        //写入请求体 requestPayload
-        byte[] body = serializer.serialize(vrpcResponse.getBody());
+        //非心跳
+        byte[] body =null;
+        if(vrpcResponse.getBody()!=null)
+        {
+            Serializer serializer  = SerializerFactory.getSerializer(vrpcResponse.getSerializeType()).getSerializer();
+            //写入请求体 requestPayload
+             body = serializer.serialize(vrpcResponse.getBody());
 
-        //TODO 压缩
+            //TODO 压缩
 
-        Compressor compressor = CompressorFactory.getCompressor(vrpcResponse.getCompressType()).getCompressor();
-        body = compressor.compress(body);
+            Compressor compressor = CompressorFactory.getCompressor(vrpcResponse.getCompressType()).getCompressor();
+            body = compressor.compress(body);
 
+        }
 
         if(body!=null)
         {
