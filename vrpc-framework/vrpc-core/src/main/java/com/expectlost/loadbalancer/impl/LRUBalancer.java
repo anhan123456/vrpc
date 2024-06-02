@@ -84,9 +84,5 @@ public class LRUBalancer extends AbstractLoadBalancer implements LoadBalancer {
         }
 
 
-            @Override
-        public void rebalance() {
-
-        }
     }
 }

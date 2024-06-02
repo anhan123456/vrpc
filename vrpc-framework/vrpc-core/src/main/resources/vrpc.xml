@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE configuration SYSTEM "http://expectlost.com/vrpc-config.dtd">
+<configuration>
+    <port>8089</port>
+    <appName>yrpc-default-appName</appName>
+    <registry url="zookeeper://127.0.0.1:2181"/>
+
+    <!-- 二选一 -->
+    <serializeType type="hessian"/>
+    <serializer code="3" name="hession" class="com.expectlost.serialize.impl.HessianSerializer"/>
+
+    <!-- 二选一 -->
+    <compressType type="gzip"/>
+    <compressor code="1" name="hession"  class="com.expectlost.compress.impl.GzipCompressor"/>
+
+    <!-- 二选一 -->
+    <loadBalancer class="com.expectlost.loadbalancer.impl.MinumumResponseTimeLoadBalancer"/>
+    <loadBalancerType type="minimumResponseTime"/>
+
+    <idGenerator class="com.expectlost.IdGenerator" dataCenterId="2" MachineId="4"/>
+</configuration>

@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.util.Random;
 
 @Slf4j
 public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
@@ -31,6 +32,11 @@ public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
 
     //解析报文
     private Object decodeFrame(ByteBuf byteBuf) {
+        try {
+            Thread.sleep(new Random().nextInt(50));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         //解析魔术值
         byte[] magic = new byte[MessageFormatConstant.MAGIC.length];
         byteBuf.readBytes(magic);
@@ -59,13 +65,14 @@ public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         //请求id
         long requestId = byteBuf.readLong();
         //时间戳
-//        long timeStamp = byteBuf.readLong();
+        long timeStamp = byteBuf.readLong();
 
         VrpcRequest request = new VrpcRequest();
         request.setRequestType(requestType);
         request.setCompressType(compressType);
         request.setSerializeType(serializeType);
         request.setRequestId(requestId);
+        request.setTimeStamp(timeStamp);
 
         //心跳请求没有载荷 此处可以直接返回
         if (requestType == RequestType.HEARTBEAT.getId()) {
@@ -75,15 +82,19 @@ public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         byte[] payload = new byte[payloadLength];
         byteBuf.readBytes(payload);
 
-        //todo 解压缩
-        Compressor compressor = CompressorFactory.getCompressor(request.getCompressType()).getCompressor();
-        payload = compressor.decompress(payload);
+        //非心跳请求
+        if(payload!=null&&payload.length!=0)
+        {
+            //todo 解压缩
+            Compressor compressor =  CompressorFactory.getCompressor(compressType).getImpl();
+            payload = compressor.decompress(payload);
 
-        //todo 反序列化
+            //todo 反序列化
 
-        Serializer serializer = SerializerFactory.getSerializer(request.getSerializeType()).getSerializer();
-        RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
-        request.setRequestPayload(requestPayload);
+            Serializer serializer = SerializerFactory.getSerializer(request.getSerializeType()).getImpl();
+            RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
+            request.setRequestPayload(requestPayload);
+        }
         log.debug("请求【{}】 已经在服务端完成反序列化工作",request.getRequestId());
         return request;
 

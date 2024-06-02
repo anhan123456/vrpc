@@ -53,7 +53,7 @@ public class VrpcRequestEncoder extends MessageToByteEncoder<VrpcRequest> {
 
         //8字节请求id
         byteBuf.writeLong(vrpcRequest.getRequestId());
-
+        byteBuf.writeLong(vrpcRequest.getTimeStamp());
 //        if(vrpcRequest.getRequestType() ==RequestType.HEARTBEAT.getId())
 //        {
 //            int wirterIndex = byteBuf.writerIndex();
@@ -63,14 +63,19 @@ public class VrpcRequestEncoder extends MessageToByteEncoder<VrpcRequest> {
 //            byteBuf.writerIndex(wirterIndex);
 //            return;
 //        }
-
-        Serializer serializer = SerializerFactory.getSerializer(vrpcRequest.getSerializeType()).getSerializer();
+        //非心跳请求
+        byte[] body = null;
+        if(vrpcRequest.getRequestPayload()!=null)
+        {
+        Serializer serializer = SerializerFactory.getSerializer(vrpcRequest.getSerializeType()).getImpl();
         //写入请求体 requestPayload
-        byte[] body = serializer.serialize(vrpcRequest.getRequestPayload());
+        body = serializer.serialize(vrpcRequest.getRequestPayload());
 
-        //压缩
-        Compressor compressor = CompressorFactory.getCompressor(vrpcRequest.getCompressType()).getCompressor();
-        body = compressor.compress(body);
+            //压缩
+            Compressor compressor = CompressorFactory.getCompressor(vrpcRequest.getCompressType()).getImpl();
+            body = compressor.compress(body);
+        }
+
         if(body!=null)
         {
             byteBuf.writeBytes(body);

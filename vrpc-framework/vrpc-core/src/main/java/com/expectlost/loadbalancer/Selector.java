@@ -9,5 +9,4 @@ public interface Selector {
     /**
      * 服务动态上线需要rebalance
      */
-    void rebalance();
 }

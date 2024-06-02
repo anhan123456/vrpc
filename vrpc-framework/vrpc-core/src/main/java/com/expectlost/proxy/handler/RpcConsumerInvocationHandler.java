@@ -54,10 +54,11 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
                 .build();
         //todo 需要对各种请求id和类型做处理
         VrpcRequest request = VrpcRequest.builder()
-                .requestId(VrpcBootstrap.ID_GENERATOR.getId())
-                .compressType(CompressorFactory.getCompressor(VrpcBootstrap.COMPRESS_TYPE).getCode())
+                .requestId(VrpcBootstrap.getInstance().getConfiguration().getIdGenerator().getId())
+                .compressType(CompressorFactory.getCompressor(VrpcBootstrap.getInstance().getConfiguration().getCompressType()).getCode())
                 .requestType(RequestType.REQUEST.getId())
-                .serializeType(SerializerFactory.getSerializer(VrpcBootstrap.SERIALIZE_TYPE).getCode())
+                .serializeType(SerializerFactory.getSerializer(VrpcBootstrap.getInstance().getConfiguration().getSerializeType()).getCode())
+                .timeStamp(System.currentTimeMillis())
                 .requestPayload(payload)
                 .build();
 
@@ -97,7 +98,8 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
          */
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
         //todo 需要completableFuture暴露出去
-        VrpcBootstrap.PENDING_REQUEST.put(1L, completableFuture);
+//        VrpcBootstrap.PENDING_REQUEST.put(request.getRequestId(), completableFuture);
+        VrpcBootstrap.PENDING_REQUEST.put(request.getRequestId(), completableFuture);
         /**
          * -----------------之类使用writeAndFlush 写出一个请求
          */
@@ -109,7 +111,12 @@ public class RpcConsumerInvocationHandler implements InvocationHandler {
         });
 
         VrpcBootstrap.REQUEST_THREAD_LOCAL.remove();
-        return completableFuture.get(3, TimeUnit.SECONDS);
+        try {
+            return completableFuture.get(3, TimeUnit.SECONDS);
+        }catch (Exception e)
+        {
+            return null;
+        }
 
     }
 
