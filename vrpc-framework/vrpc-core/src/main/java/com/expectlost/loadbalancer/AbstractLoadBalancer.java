@@ -20,7 +20,7 @@ public abstract class AbstractLoadBalancer implements LoadBalancer {
     public InetSocketAddress selectServiceAddress(String serviceName) {
         Selector selector = cache.get(serviceName);
         if (selector == null) {
-            List<InetSocketAddress> serviceList = VrpcBootstrap.getInstance().getRegistry().lookup(serviceName);
+            List<InetSocketAddress> serviceList = VrpcBootstrap.getInstance().getConfiguration().getRegistryConfig().getRegistry().lookup(serviceName);
             selector = getSelector(serviceList);
             cache.put(serviceName, selector);
         }

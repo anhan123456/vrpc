@@ -29,7 +29,8 @@ public class UpAndDownWatcher  implements Watcher {
                log.debug("检测到服务【{}】下节点列表发生变化",watchedEvent.getPath());
            }
            String serviceName = getServiceName(watchedEvent.getPath());
-            Registry registry = VrpcBootstrap.getInstance().getRegistry();
+            Registry registry = VrpcBootstrap.getInstance().getConfiguration().getRegistryConfig().getRegistry();
+            //拉取所有节点
             List<InetSocketAddress> addresses = registry.lookup(serviceName);
             for (InetSocketAddress address : addresses) {
                 if (!VrpcBootstrap.CHANNEL_CACHE.containsKey(address))
@@ -48,7 +49,11 @@ public class UpAndDownWatcher  implements Watcher {
             for (Map.Entry<InetSocketAddress, Channel> entry : VrpcBootstrap.CHANNEL_CACHE.entrySet()) {
                 if(!addresses.contains(entry.getKey()))
                 {
+                    System.out.println(">>>>>>>>>>>>"+entry.getKey()+"节点已经下线<<<<<<<<<<");
                     VrpcBootstrap.CHANNEL_CACHE.remove(entry.getKey());
+                    VrpcBootstrap.CHANNEL_CACHE.forEach((address,channel)->{
+                        System.out.println(address+"::::");
+                    });
                 }
             }
 

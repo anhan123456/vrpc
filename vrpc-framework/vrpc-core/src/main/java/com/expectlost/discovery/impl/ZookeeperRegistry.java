@@ -49,7 +49,7 @@ public class ZookeeperRegistry extends AbstractRegistry {
         //服务提供方的端口 一般自定义设定 我们还需要一个 获取ip的方法
         //ip通常需要一个局域网ip 不是127.0.0.1 也不是ipv6
         //TODO 端口后续处理端口问题
-        String node = parentNode+"/"+ NetUtils.getIp()+":"+ VrpcBootstrap.getInstance().PORT;
+        String node = parentNode+"/"+ NetUtils.getIp()+":"+ VrpcBootstrap.getInstance().getConfiguration().getPort();
         if(!ZookeeperUtils.exists(zooKeeper,node,null)){
             ZookeeperNode zookeeperNode1 = new ZookeeperNode(node, null);
             ZookeeperUtils.createNode(zooKeeper,zookeeperNode1,null,CreateMode.EPHEMERAL);

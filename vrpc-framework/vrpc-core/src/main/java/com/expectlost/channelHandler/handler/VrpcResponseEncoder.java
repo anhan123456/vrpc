@@ -57,13 +57,13 @@ public class VrpcResponseEncoder extends MessageToByteEncoder<VrpcResponse> {
         byte[] body =null;
         if(vrpcResponse.getBody()!=null)
         {
-            Serializer serializer  = SerializerFactory.getSerializer(vrpcResponse.getSerializeType()).getSerializer();
+            Serializer serializer  = SerializerFactory.getSerializer(vrpcResponse.getSerializeType()).getImpl();
             //写入请求体 requestPayload
              body = serializer.serialize(vrpcResponse.getBody());
 
             //TODO 压缩
 
-            Compressor compressor = CompressorFactory.getCompressor(vrpcResponse.getCompressType()).getCompressor();
+            Compressor compressor = CompressorFactory.getCompressor(vrpcResponse.getCompressType()).getImpl();
             body = compressor.compress(body);
 
         }

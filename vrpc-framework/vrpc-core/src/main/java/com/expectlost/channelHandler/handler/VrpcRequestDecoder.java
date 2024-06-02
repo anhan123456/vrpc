@@ -86,12 +86,12 @@ public class VrpcRequestDecoder extends LengthFieldBasedFrameDecoder {
         if(payload!=null&&payload.length!=0)
         {
             //todo 解压缩
-            Compressor compressor = CompressorFactory.getCompressor(request.getCompressType()).getCompressor();
+            Compressor compressor =  CompressorFactory.getCompressor(compressType).getImpl();
             payload = compressor.decompress(payload);
 
             //todo 反序列化
 
-            Serializer serializer = SerializerFactory.getSerializer(request.getSerializeType()).getSerializer();
+            Serializer serializer = SerializerFactory.getSerializer(request.getSerializeType()).getImpl();
             RequestPayload requestPayload = serializer.deserialize(payload, RequestPayload.class);
             request.setRequestPayload(requestPayload);
         }

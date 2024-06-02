@@ -79,12 +79,12 @@ public class VrpcResponseDecoder extends LengthFieldBasedFrameDecoder {
 
         if(result!=null&&result.length>0){
 
-        Compressor compressor = CompressorFactory.getCompressor(response.getCompressType()).getCompressor();
+        Compressor compressor = CompressorFactory.getCompressor(response.getCompressType()).getImpl();
         result = compressor.decompress(result);
 
         //todo 反序列化
 
-        Serializer serializer = SerializerFactory.getSerializer(response.getSerializeType()).getSerializer();
+        Serializer serializer = SerializerFactory.getSerializer(response.getSerializeType()).getImpl();
         Object result_body = serializer.deserialize(result, Object.class);
         response.setBody(result_body);
             if(log.isDebugEnabled())

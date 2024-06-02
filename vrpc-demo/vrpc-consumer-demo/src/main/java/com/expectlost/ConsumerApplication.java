@@ -18,9 +18,9 @@ public class ConsumerApplication {
         VrpcBootstrap.getInstance()
                 .application("first-" +
                         "rpc-consumer")
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .serialize("jdk")
-                .compress("gzip")
+//                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+//                .serialize("jdk")
+//                .compress("gzip")
                 .reference(reference);
 
         System.out.println("PRINT" + VrpcBootstrap.getInstance().ANSWER_TIME_CHANNEL_CACHE.size());
@@ -29,7 +29,7 @@ public class ConsumerApplication {
       {
               String sayHi = helloVrpc.sayHi("1111111");
               log.info("sayHi-->{}",sayHi);
-          Thread.sleep(2000);
+          Thread.sleep(5000);
       }
 
 

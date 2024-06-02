@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 public class HeartBeatDetector {
     public static void detect(String serviceName) {
         //从注册中心拉取服务列表,并建立连接
-        Registry registry = VrpcBootstrap.getInstance().getRegistry();
+        Registry registry = VrpcBootstrap.getInstance().getConfiguration().getRegistryConfig().getRegistry();
         //将连接进行缓存
         List<InetSocketAddress> addresses = registry.lookup(serviceName);
 
@@ -65,10 +65,10 @@ public class HeartBeatDetector {
                 while (tryTimes>0) {
                     long start = System.currentTimeMillis();
                     VrpcRequest vrpcRequest = VrpcRequest.builder()
-                            .requestId(VrpcBootstrap.ID_GENERATOR.getId())
-                            .compressType(CompressorFactory.getCompressor(VrpcBootstrap.COMPRESS_TYPE).getCode())
+                            .requestId(VrpcBootstrap.getInstance().getConfiguration().getIdGenerator().getId())
+                            .compressType(CompressorFactory.getCompressor(VrpcBootstrap.getInstance().getConfiguration().getCompressType()).getCode())
                             .requestType(RequestType.HEARTBEAT.getId())
-                            .serializeType(SerializerFactory.getSerializer(VrpcBootstrap.SERIALIZE_TYPE).getCode())
+                            .serializeType(SerializerFactory.getSerializer(VrpcBootstrap.getInstance().getConfiguration().getSerializeType()).getCode())
                             .requestPayload(null)
                             .timeStamp(start)
                             .build();
@@ -95,6 +95,7 @@ public class HeartBeatDetector {
                         if(tryTimes ==0)
                         {
                             VrpcBootstrap.CHANNEL_CACHE.remove(address);
+                            break;
                         }
 
                         try {
