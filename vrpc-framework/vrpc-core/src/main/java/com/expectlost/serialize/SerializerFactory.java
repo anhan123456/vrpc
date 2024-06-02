@@ -42,6 +42,8 @@ public class SerializerFactory {
     }
 
     public static  ObjectWrapper<Serializer> getSerializer(Byte serializeCode) {
+
+        System.out.println("正在使用序列化方式為"+serializeCode);
         ObjectWrapper<Serializer> serializerWrapper = SERIALIZER_CACHE_CODE.get(serializeCode);
         if(serializerWrapper == null){
             log.error("未找到您配置的【{}】序列化工具，默认选用jdk的序列化方式。",serializeCode);

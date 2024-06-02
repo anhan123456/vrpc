@@ -1,6 +1,7 @@
 package com.expectlost.config;
 
 import com.expectlost.IdGenerator;
+import com.expectlost.ProtocalConfig;
 import com.expectlost.discovery.RegistryConfig;
 import com.expectlost.loadbalancer.LoadBalancer;
 import com.expectlost.loadbalancer.impl.RoundRobinLoadBalancer;
@@ -17,7 +18,8 @@ public class Configuration {
     
     // 配置信息-->端口号
     private int port = 8094;
-    
+    private ProtocalConfig protocalConfig = new ProtocalConfig("jdk");
+
     // 配置信息-->应用程序的名字
     private String appName = "default";
     

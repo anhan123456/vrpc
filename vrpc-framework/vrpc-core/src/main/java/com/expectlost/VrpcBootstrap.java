@@ -4,6 +4,7 @@ import com.expectlost.annotation.VrpcApi;
 import com.expectlost.channelHandler.handler.MethodCallHandler;
 import com.expectlost.channelHandler.handler.VrpcRequestDecoder;
 import com.expectlost.channelHandler.handler.VrpcResponseEncoder;
+import com.expectlost.config.Configuration;
 import com.expectlost.core.HeartBeatDetector;
 import com.expectlost.discovery.Registry;
 import com.expectlost.discovery.RegistryConfig;
@@ -57,6 +58,7 @@ public class VrpcBootstrap {
     private VrpcBootstrap() {
         //构造引导程序 需要做初始化
         this.configuration = new Configuration();
+        System.out.println(this.configuration);
 
     }
 
