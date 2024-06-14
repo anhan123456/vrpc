@@ -33,7 +33,6 @@ v-rpc框架
 - 支持`jdk`、`javassist`、`CGlib`的动态代理方式
 - 支持`fastJson`、`hessian`、`kryo`、`jdk`的序列化方式
 - 支持简易扩展点，泛化调用等功能
-- 加入了`Spring Boot Starter`
 
 
 
