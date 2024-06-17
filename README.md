@@ -38,7 +38,7 @@ v-rpc框架
 
 ### 设计：
 
-**`easy-rpc`框架调用流程：**
+**`v-rpc`框架调用流程：**
 
 ![架构图](https://nexus-data0312.oss-cn-beijing.aliyuncs.com/aa/rpc9.png)
 
